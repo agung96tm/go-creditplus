@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/agung96tm/go-creditplus/internal/models"
 	"github.com/agung96tm/go-creditplus/ui"
+	"github.com/justinas/nosurf"
 	"html/template"
 	"io/fs"
 	"net/http"
@@ -12,14 +13,20 @@ import (
 var functions = template.FuncMap{}
 
 type templateData struct {
-	Form      any
-	Consumers []*models.Consumer
-	Consumer  *models.Consumer
-	Limits    []*models.Limit
+	Form            any
+	User            *models.User
+	Limits          []*models.Limit
+	Flash           string
+	IsAuthenticated bool
+	CSRFToken       string
 }
 
 func (app *application) newTemplateData(r *http.Request) *templateData {
-	return &templateData{}
+	return &templateData{
+		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticated: app.isAuthenticated(r),
+		CSRFToken:       nosurf.Token(r),
+	}
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {

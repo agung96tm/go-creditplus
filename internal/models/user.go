@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -101,5 +102,53 @@ func (m UserModel) GetAll() ([]*User, error) {
 }
 
 func (m UserModel) Exists(id int) (bool, error) {
-	return false, nil
+	var exists bool
+	stmt := `SELECT EXISTS(SELECT true FROM users WHERE id = ?)`
+	err := m.DB.QueryRow(stmt, id).Scan(&exists)
+	return exists, err
+}
+
+func (m UserModel) Authenticate(nik, password string) (int, error) {
+	var id int
+	var savedPassword string
+
+	stmt := `SELECT id, password FROM users WHERE nik = ?`
+	err := m.DB.QueryRow(stmt, nik).Scan(&id, &savedPassword)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(savedPassword), []byte(password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return 0, ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	return id, nil
+}
+
+func (m UserModel) UpdatePassword(id int, password string) error {
+	stmt := `
+		UPDATE users
+		SET password = ?
+		WHERE id = ?
+	`
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return err
+	}
+
+	_, err = m.DB.Exec(stmt, id, string(hashedPassword))
+	if err != nil {
+		return err
+	}
+	return nil
 }
