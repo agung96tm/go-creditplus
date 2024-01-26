@@ -15,7 +15,6 @@ func (app *application) secureHeaders(next http.Handler) http.Handler {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "deny")
 		w.Header().Set("X-XSS-Protection", "0")
-
 		next.ServeHTTP(w, r)
 	})
 }
@@ -25,7 +24,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		go func() {
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "close")
-				app.serverError(w, r, fmt.Errorf("%s", err))
+				app.serverError(w, fmt.Errorf("%s", err))
 			}
 		}()
 
@@ -36,8 +35,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 func (app *application) requireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !app.isAuthenticated(r) {
-			path := r.URL.Path
-			http.Redirect(w, r, fmt.Sprintf("/login?next=%s", path), http.StatusSeeOther)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 
@@ -67,7 +65,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 
 		exists, err := app.models.User.Exists(id)
 		if err != nil {
-			app.serverError(w, r, err)
+			app.serverError(w, err)
 			return
 		}
 

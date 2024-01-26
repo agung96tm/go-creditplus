@@ -17,18 +17,18 @@ type LimitModel struct {
 	DB *sql.DB
 }
 
-func (m LimitModel) GetLimitByConsumer(consumer *Consumer) ([]*Limit, error) {
+func (m LimitModel) GetLimitByConsumer(user *User) ([]*Limit, error) {
 	query := `
-			SELECT id, consumer_id, month, consumer_limit
+			SELECT id, user_id, month, consumer_limit
 			FROM limits
-			WHERE consumer_id = ?
+			WHERE user_id = ?
 			ORDER BY month
 		`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := m.DB.QueryContext(ctx, query, consumer.ID)
+	rows, err := m.DB.QueryContext(ctx, query, user.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -2,11 +2,7 @@ package models
 
 import (
 	"database/sql"
-	"errors"
 )
-
-var ErrNoDataFound = errors.New("data not found")
-var ErrDuplicateEmail = errors.New("duplicate email")
 
 type Models struct {
 	User  UserModel
