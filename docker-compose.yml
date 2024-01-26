@@ -1,0 +1,17 @@
+version: '3'
+services:
+  db:
+    image: mysql:8.2.0
+    container_name: go-creditplus-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - credit-db-data:/var/lib/postgresql/data/
+    environment:
+      - MYSQL_DATABASE=credit_db
+      - MYSQL_USER=credit_user
+      - MYSQL_PASSWORD=credit_password
+      - MYSQL_ROOT_PASSWORD=password
+
+volumes:
+  credit-db-data: {}

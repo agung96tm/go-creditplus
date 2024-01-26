@@ -1,0 +1,4 @@
+export SECRET_KEY=foobar
+export API_ADDR=:8000
+export WEB_ADDR=:3000
+export DB_DSN=credit_user:credit_password@localhost:3306/credit_db
