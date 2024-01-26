@@ -11,17 +11,10 @@ help:
 
 # === Application ===
 
-## run/api: run the api application
-.PHONY: run/api
-run/api:
-	go run ./cmd/api -addr ${API_ADDR} \
-		-db-dsn=${DB_DSN} \
-		-secret-key=${SECRET_KEY}
-
 ## run/web: run the web application
 .PHONY: run/web
 run/web:
-	go run ./cmd/web -addr ${WEB_ADDR} \
+	go run ./cmd/web -addr ${ADDR} \
 		-db-dsn=${DB_DSN} \
 		-secret-key=${SECRET_KEY}
 
