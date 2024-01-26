@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/agung96tm/go-creditplus/internal/models"
 	"github.com/agung96tm/go-creditplus/ui"
 	"html/template"
 	"io/fs"
@@ -11,7 +12,10 @@ import (
 var functions = template.FuncMap{}
 
 type templateData struct {
-	Form any
+	Form      any
+	Consumers []*models.Consumer
+	Consumer  *models.Consumer
+	Limits    []*models.Limit
 }
 
 func (app *application) newTemplateData(r *http.Request) *templateData {

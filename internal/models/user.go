@@ -8,64 +8,98 @@ import (
 )
 
 type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Password string `json:"-"`
+	ID          int     `json:"id"`
+	NIK         string  `json:"nik"`
+	FullName    string  `json:"full_name"`
+	LegalName   string  `json:"legal_name"`
+	PlaceBirth  string  `json:"place_birth"`
+	DateBirth   string  `json:"date_birth"`
+	Salary      float64 `json:"salary"`
+	IDCardPhoto string  `json:"id_card_photo"`
+	SelfiePhoto string  `json:"selfie_photo"`
 }
 
 type UserModel struct {
 	DB *sql.DB
 }
 
-func (m UserModel) Get(id int) (*User, error) {
+func (m UserModel) GetById(id int) (*User, error) {
 	query := `
-		SELECT id, name, email, password
-		FROM users
-		WHERE id = $1
+		SELECT id, nik, full_name, legal_name, place_birth, date_birth, salary, id_card_photo, selfie_photo
+		FROM consumers
+		WHERE id = ?
 	`
-
-	var user User
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	var consumer User
 	err := m.DB.QueryRowContext(ctx, query, id).Scan(
-		&user.ID,
-		&user.Name,
-		&user.Email,
-		&user.Password,
+		&consumer.ID,
+		&consumer.NIK,
+		&consumer.FullName,
+		&consumer.LegalName,
+		&consumer.PlaceBirth,
+		&consumer.DateBirth,
+		&consumer.Salary,
+		&consumer.IDCardPhoto,
+		&consumer.SelfiePhoto,
 	)
 
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, NoDataFound
+			return nil, ErrNoDataFound
 		default:
 			return nil, err
 		}
 	}
-
-	return &user, nil
+	return &consumer, nil
 }
 
-func (m UserModel) GetByEmail(email string) (*User, error) {
-	query := `SELECT id, email, name, password FROM users WHERE email = $1`
+func (m UserModel) GetAll() ([]*User, error) {
+	query := `
+		SELECT id, nik, full_name, legal_name, place_birth, date_birth, salary, id_card_photo, selfie_photo
+		FROM consumers
+		ORDER BY id
+	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var user User
-	err := m.DB.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Email, &user.Name, &user.Password)
+	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, NoDataFound
+			return nil, ErrNoDataFound
 		default:
 			return nil, err
 		}
-
 	}
+	defer rows.Close()
 
-	return &user, nil
+	var consumers []*User
+	for rows.Next() {
+		var consumer User
+		err := rows.Scan(
+			&consumer.ID,
+			&consumer.NIK,
+			&consumer.FullName,
+			&consumer.LegalName,
+			&consumer.PlaceBirth,
+			&consumer.DateBirth,
+			&consumer.Salary,
+			&consumer.IDCardPhoto,
+			&consumer.SelfiePhoto)
+		if err != nil {
+			return nil, err
+		}
+
+		consumers = append(consumers, &consumer)
+	}
+	return consumers, nil
+}
+
+func (m UserModel) Exists(id int) (bool, error) {
+	return false, nil
 }

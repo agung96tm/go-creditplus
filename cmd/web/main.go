@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/agung96tm/go-creditplus/internal/models"
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 	"html/template"
 	"log"
@@ -13,10 +16,12 @@ import (
 )
 
 type application struct {
-	models        *models.Models
-	infoLog       *log.Logger
-	errorLog      *log.Logger
-	templateCache map[string]*template.Template
+	models         *models.Models
+	infoLog        *log.Logger
+	errorLog       *log.Logger
+	templateCache  map[string]*template.Template
+	formDecoder    *form.Decoder
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -41,11 +46,18 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Cookie.Secure = true
+
 	app := application{
-		models:        models.New(db),
-		infoLog:       infoLog,
-		errorLog:      errorLog,
-		templateCache: templateCache,
+		models:         models.New(db),
+		infoLog:        infoLog,
+		errorLog:       errorLog,
+		templateCache:  templateCache,
+		sessionManager: sessionManager,
+		formDecoder:    form.NewDecoder(),
 	}
 
 	srv := &http.Server{

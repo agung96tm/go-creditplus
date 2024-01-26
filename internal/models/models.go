@@ -5,15 +5,17 @@ import (
 	"errors"
 )
 
-var NoDataFound = errors.New("data not found")
+var ErrNoDataFound = errors.New("data not found")
 var ErrDuplicateEmail = errors.New("duplicate email")
 
 type Models struct {
-	User UserModel
+	User  UserModel
+	Limit LimitModel
 }
 
 func New(db *sql.DB) *Models {
 	return &Models{
 		UserModel{DB: db},
+		LimitModel{DB: db},
 	}
 }
