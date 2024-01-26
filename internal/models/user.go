@@ -26,24 +26,24 @@ type UserModel struct {
 func (m UserModel) GetById(id int) (*User, error) {
 	query := `
 		SELECT id, nik, full_name, legal_name, place_birth, date_birth, salary, id_card_photo, selfie_photo
-		FROM consumers
+		FROM users
 		WHERE id = ?
 	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var consumer User
+	var user User
 	err := m.DB.QueryRowContext(ctx, query, id).Scan(
-		&consumer.ID,
-		&consumer.NIK,
-		&consumer.FullName,
-		&consumer.LegalName,
-		&consumer.PlaceBirth,
-		&consumer.DateBirth,
-		&consumer.Salary,
-		&consumer.IDCardPhoto,
-		&consumer.SelfiePhoto,
+		&user.ID,
+		&user.NIK,
+		&user.FullName,
+		&user.LegalName,
+		&user.PlaceBirth,
+		&user.DateBirth,
+		&user.Salary,
+		&user.IDCardPhoto,
+		&user.SelfiePhoto,
 	)
 
 	if err != nil {
@@ -54,13 +54,13 @@ func (m UserModel) GetById(id int) (*User, error) {
 			return nil, err
 		}
 	}
-	return &consumer, nil
+	return &user, nil
 }
 
 func (m UserModel) GetAll() ([]*User, error) {
 	query := `
 		SELECT id, nik, full_name, legal_name, place_birth, date_birth, salary, id_card_photo, selfie_photo
-		FROM consumers
+		FROM users
 		ORDER BY id
 	`
 
@@ -78,26 +78,26 @@ func (m UserModel) GetAll() ([]*User, error) {
 	}
 	defer rows.Close()
 
-	var consumers []*User
+	var users []*User
 	for rows.Next() {
-		var consumer User
+		var user User
 		err := rows.Scan(
-			&consumer.ID,
-			&consumer.NIK,
-			&consumer.FullName,
-			&consumer.LegalName,
-			&consumer.PlaceBirth,
-			&consumer.DateBirth,
-			&consumer.Salary,
-			&consumer.IDCardPhoto,
-			&consumer.SelfiePhoto)
+			&user.ID,
+			&user.NIK,
+			&user.FullName,
+			&user.LegalName,
+			&user.PlaceBirth,
+			&user.DateBirth,
+			&user.Salary,
+			&user.IDCardPhoto,
+			&user.SelfiePhoto)
 		if err != nil {
 			return nil, err
 		}
 
-		consumers = append(consumers, &consumer)
+		users = append(users, &user)
 	}
-	return consumers, nil
+	return users, nil
 }
 
 func (m UserModel) Exists(id int) (bool, error) {
