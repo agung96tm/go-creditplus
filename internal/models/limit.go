@@ -15,8 +15,14 @@ type Limit struct {
 
 	Total          float64 `json:"total"`
 	AdminFee       float64 `json:"admin_fee"`
+	AmountAdminFee float64 `json:"amount_admin_fee"`
 	PayPerMonth    float64 `json:"pay_per_month"`
+	RatePerMonth   float64 `json:"rate_per_month"`
 	PercentageRate float64 `json:"percentage_rate"`
+}
+
+func (l Limit) IsEligible(price float64) bool {
+	return l.ConsumerLimit >= price
 }
 
 type LimitModel struct {
@@ -67,7 +73,9 @@ func (m LimitModel) GetLimitsByUserAndProduct(user *User, product *Product) ([]*
 			month,
 			consumer_limit,
 			admin_fee,
+		    amount_admin_fee,
 			total,
+		    (total / l.month * percentage / 100) AS rate_per_month,
 			(total / l.month + (total / l.month * percentage / 100)) AS pay_per_month,
 			percentage
 		FROM (
@@ -77,6 +85,7 @@ func (m LimitModel) GetLimitsByUserAndProduct(user *User, product *Product) ([]*
 					 l.month,
 					 l.consumer_limit,
 					 c.admin_fee,
+		             ? * c.admin_fee / 100 AS amount_admin_fee,
 					 ? + ? * c.admin_fee / 100 AS total,
 					 cr.percentage
 				 FROM
@@ -92,7 +101,7 @@ func (m LimitModel) GetLimitsByUserAndProduct(user *User, product *Product) ([]*
 		ORDER BY
 			month;
 		`
-	args := []any{product.Price, product.Price, user.ID, product.Price}
+	args := []any{product.Price, product.Price, product.Price, user.ID, product.Price}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -117,7 +126,9 @@ func (m LimitModel) GetLimitsByUserAndProduct(user *User, product *Product) ([]*
 			&limit.Month,
 			&limit.ConsumerLimit,
 			&limit.AdminFee,
+			&limit.AmountAdminFee,
 			&limit.Total,
+			&limit.RatePerMonth,
 			&limit.PayPerMonth,
 			&limit.PercentageRate,
 		)
@@ -131,23 +142,75 @@ func (m LimitModel) GetLimitsByUserAndProduct(user *User, product *Product) ([]*
 	return limits, nil
 }
 
-func (m LimitModel) Get(id int) (*Limit, error) {
+func (m LimitModel) ReduceLimit(limit *Limit, amount float64) (bool, error) {
+	query := `UPDATE limits SET consumer_limit = consumer_limit - ? WHERE id = ?`
+	args := []any{amount, limit.ID}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	r, err := m.DB.QueryContext(ctx, query, args...)
+	defer r.Close()
+
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (m LimitModel) GetWithProductCalc(id int, product *Product) (*Limit, error) {
 	query := `
-			SELECT id, user_id, month, consumer_limit
-			FROM limits
-			WHERE id = ?
-			ORDER BY month
+		SELECT
+			id,
+			user_id,
+			month,
+			consumer_limit,
+			admin_fee,
+		    amount_admin_fee,
+			total,
+		    (total / l.month * percentage / 100) AS rate_per_month,
+			(total / l.month + (total / l.month * percentage / 100)) AS pay_per_month,
+			percentage
+		FROM (
+				 SELECT
+					 l.id,
+					 l.user_id,
+					 l.month,
+					 l.consumer_limit,
+					 c.admin_fee,
+		             ? * c.admin_fee / 100 AS amount_admin_fee,
+					 ? + ? * c.admin_fee / 100 AS total,
+					 cr.percentage
+				 FROM
+					 limits l
+						 JOIN
+					 config_rates cr ON cr.month = l.month
+						 CROSS JOIN
+					 (SELECT admin_fee FROM configs LIMIT 1) c
+				 WHERE
+					 l.id = ?
+				   AND l.consumer_limit >= ?
+			 ) AS l
+		ORDER BY
+			month;
 		`
+	args := []any{product.Price, product.Price, product.Price, id, product.Price}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	var limit Limit
-	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(
 		&limit.ID,
 		&limit.UserID,
 		&limit.Month,
 		&limit.ConsumerLimit,
+		&limit.AdminFee,
+		&limit.AmountAdminFee,
+		&limit.Total,
+		&limit.RatePerMonth,
+		&limit.PayPerMonth,
+		&limit.PercentageRate,
 	)
 	if err != nil {
 		switch {

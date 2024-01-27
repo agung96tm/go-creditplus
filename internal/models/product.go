@@ -31,6 +31,7 @@ func (m ProductModel) GetAll() ([]*Product, error) {
 	defer cancel()
 
 	rows, err := m.DB.QueryContext(ctx, query)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}

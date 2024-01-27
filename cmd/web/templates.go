@@ -21,7 +21,6 @@ var functions = template.FuncMap{
 
 type templateData struct {
 	Form            any
-	Limits          []*models.Limit
 	Flash           string
 	IsAuthenticated bool
 	CSRFToken       string
@@ -30,6 +29,9 @@ type templateData struct {
 	User         *models.User
 	Products     []*models.Product
 	Product      *models.Product
+	Transaction  *models.Transaction
+	Limits       []*models.Limit
+	Limit        *models.Limit
 }
 
 func (app *application) newTemplateData(r *http.Request) *templateData {

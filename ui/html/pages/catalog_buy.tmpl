@@ -19,7 +19,8 @@
     <div>
         <h2>Pesan</h2>
         {{ if gt (len .Limits) 0 }}
-            <form method='post'>
+            <form method='post' action='/catalogs/{{ .Product.ID }}/buy' method='POST' novalidate>
+                <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
                 <div>
                     <input type='text' name='name' value='{{ .Form.Name }}' placeholder='Nama' />
                 </div>
