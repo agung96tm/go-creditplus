@@ -1,0 +1,16 @@
+{{define "title"}}Credit - Success{{end}}
+
+{{define "main"}}
+    <div>
+         <h2>Berhasil membeli Product: {{ .Product.Name }}</h2>
+         <div>
+             <p>Biaya: <strong>{{ priceComma .Limit.Total }} (termasuk admin {{.Limit.AdminFee}}%)</strong></p>
+             <p>Bayar Bulan: <strong>{{ priceComma .Limit.PayPerMonth }} x {{ .Limit.Month }} Bulan (termasuk biaya {{ .Limit.PercentageRate}}%)</strong></p>
+             <p>Total: <strong>{{ priceComma .Transaction.AmountInstallment }}</strong></p>
+         </div>
+
+         <div>
+            <a href='/dashboard'>Kembali ke dashboard</a>
+         </div>
+    </div>
+{{ end }}

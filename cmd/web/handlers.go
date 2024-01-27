@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/agung96tm/go-creditplus/internal/models"
 	"github.com/agung96tm/go-creditplus/internal/validator"
 	"net/http"
@@ -209,17 +208,6 @@ func (app *application) catalogBuyPostHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	limit, err := app.models.Limit.Get(form.LimitID)
-	if err != nil {
-		switch {
-		case errors.Is(err, models.ErrNoDataFound):
-			app.notFound(w)
-		default:
-			app.serverError(w, err)
-		}
-		return
-	}
-
 	userID := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
 	user, err := app.models.User.GetById(userID)
 	if err != nil {
@@ -232,12 +220,47 @@ func (app *application) catalogBuyPostHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if limit.UserID != user.ID {
-		app.clientError(w, http.StatusBadRequest)
+	limit, err := app.models.Limit.GetWithProductCalc(form.LimitID, product)
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrNoDataFound):
+			app.notFound(w)
+		default:
+			app.serverError(w, err)
+		}
 		return
 	}
 
-	fmt.Println(product)
+	trx, err := app.models.Transaction.Trx(
+		form.Phone,
+		user,
+		limit,
+		product,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrLimitInsufficient):
+			app.clientError(w, http.StatusBadRequest)
+		case errors.Is(err, models.ErrNoMatched):
+			panic("invalid limit and user")
+		default:
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	_, err = app.models.Limit.ReduceLimit(limit, product.Price)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Transaction = trx
+	data.Product = product
+	data.Limit = limit
+
+	app.render(w, http.StatusOK, "catalog_buy_done.tmpl", data)
 }
 
 func (app *application) dashboardHandler(w http.ResponseWriter, r *http.Request) {
