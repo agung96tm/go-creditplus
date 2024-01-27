@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/catalogs", http.StatusSeeOther)
+}
+
 type LoginForm struct {
 	NIK                 string `form:"nik"`
 	Password            string `form:"password"`
@@ -73,11 +77,24 @@ func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) catalogListHandler(w http.ResponseWriter, r *http.Request) {
+	products, err := app.models.Product.GetAll()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 
+	data := app.newTemplateData(r)
+	data.Products = products
+
+	app.render(w, http.StatusOK, "catalog_list.tmpl", data)
 }
 
 func (app *application) catalogDetailHandler(w http.ResponseWriter, r *http.Request) {
 
+	data := app.newTemplateData(r)
+	data.Product = product
+
+	app.render(w, http.StatusOK, "catalog_detail.tmpl", data)
 }
 
 func (app *application) catalogBuyHandler(w http.ResponseWriter, r *http.Request) {
