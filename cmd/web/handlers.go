@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/agung96tm/go-creditplus/internal/models"
 	"github.com/agung96tm/go-creditplus/internal/validator"
 	"net/http"
@@ -114,12 +115,129 @@ func (app *application) catalogDetailHandler(w http.ResponseWriter, r *http.Requ
 	app.render(w, http.StatusOK, "catalog_detail.tmpl", data)
 }
 
-func (app *application) catalogBuyHandler(w http.ResponseWriter, r *http.Request) {
+type BuyForm struct {
+	LimitID             int    `form:"limit_id"`
+	Name                string `form:"name"`
+	Phone               string `form:"phone"`
+	validator.Validator `form:"-"`
+}
 
+func (app *application) catalogBuyHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.getParamId(r)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	// product
+	product, err := app.models.Product.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrNoDataFound):
+			app.notFound(w)
+		default:
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	// Logged-in user
+	userID := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+	user, err := app.models.User.GetById(userID)
+	if err != nil {
+		if errors.Is(err, models.ErrNoDataFound) {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	// your limit
+	limits, err := app.models.Limit.GetLimitsByUserAndProduct(user, product)
+	if err != nil {
+		if errors.Is(err, models.ErrNoDataFound) {
+			limits = make([]*models.Limit, 0)
+		} else {
+			app.serverError(w, err)
+		}
+	}
+
+	data := app.newTemplateData(r)
+	data.Product = product
+	data.Limits = limits
+	data.LoggedInUser = user
+	data.Form = BuyForm{
+		Name: user.FullName,
+	}
+
+	app.render(w, http.StatusOK, "catalog_buy.tmpl", data)
 }
 
 func (app *application) catalogBuyPostHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.getParamId(r)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
 
+	var form BuyForm
+	err = app.decodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	form.CheckField(validator.NotBlank(form.Name), "name", "This field cannot be blank")
+	form.CheckField(validator.NotBlank(form.Phone), "phone", "This field cannot be blank")
+	if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "catalog_buy.tmpl", data)
+		return
+	}
+
+	// product
+	product, err := app.models.Product.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrNoDataFound):
+			app.notFound(w)
+		default:
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	limit, err := app.models.Limit.Get(form.LimitID)
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrNoDataFound):
+			app.notFound(w)
+		default:
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	userID := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+	user, err := app.models.User.GetById(userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrNoDataFound):
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		default:
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	if limit.UserID != user.ID {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println(product)
 }
 
 func (app *application) dashboardHandler(w http.ResponseWriter, r *http.Request) {

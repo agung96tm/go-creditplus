@@ -1,1 +1,51 @@
-package pages
+{{define "title"}}Credit - Product{{end}}
+
+{{define "main"}}
+    <div>
+        {{ with .Product }}
+            <h2>{{ .Name }}</h2>
+
+            <div>
+                <div>{{ .PartnerName }}</div>
+            </div>
+
+            <div>
+                <p>{{ .Description }}</p>
+                <p>Price: <strong>{{ priceComma .Price }}</strong></p>
+            </div>
+        {{ end }}
+    </div>
+
+    <div>
+        <h2>Pesan</h2>
+        {{ if gt (len .Limits) 0 }}
+            <form method='post'>
+                <div>
+                    <input type='text' name='name' value='{{ .Form.Name }}' placeholder='Nama' />
+                </div>
+                <div>
+                    <input type='text' name='phone' value='{{ .Form.Phone }}' placeholder='Nomor Telepon' />
+                </div>
+
+                <br />
+
+                {{ range .Limits }}
+                    <div>
+                        <input type="radio" id='{{ .ID }}' name="limit_id" value='{{ .ID }}'>
+                        <label for="{{ .ID }}">{{ .Month }} Bulan - {{ priceComma .PayPerMonth }} (Admin: {{ .AdminFee }}% + Include Rate Per Month: {{.PercentageRate}}%)</label><br>
+                    </div>
+                {{ end }}
+
+                <br />
+
+                <div>
+                    <button type="submit">Pesan Sekarang</button>
+                </div>
+            </form>
+        {{ else }}
+            <p><i>Kredit anda sudah mencapai limit</i></p>
+        {{ end }}
+    </div>
+
+    <br /><br />
+{{end}}
