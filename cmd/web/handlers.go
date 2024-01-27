@@ -90,6 +90,23 @@ func (app *application) catalogListHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) catalogDetailHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.getParamId(r)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	product, err := app.models.Product.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrNoDataFound):
+			app.notFound(w)
+			return
+		default:
+			app.serverError(w, err)
+			return
+		}
+	}
 
 	data := app.newTemplateData(r)
 	data.Product = product
