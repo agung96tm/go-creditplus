@@ -15,6 +15,7 @@ func (app *application) routes() http.Handler {
 	fileServer := http.FileServer(http.FS(ui.Files))
 	router.Handler(http.MethodGet, "/static/*filepath", fileServer)
 
+	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.homeHandler))
 	router.Handler(http.MethodGet, "/catalogs", dynamic.ThenFunc(app.catalogListHandler))
 	router.Handler(http.MethodGet, "/catalogs/:id", dynamic.ThenFunc(app.catalogDetailHandler))
 	router.Handler(http.MethodGet, "/catalogs/:id/buy", protected.ThenFunc(app.catalogBuyHandler))

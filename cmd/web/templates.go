@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/agung96tm/go-creditplus/internal/models"
 	"github.com/agung96tm/go-creditplus/ui"
+	"github.com/dustin/go-humanize"
 	"github.com/justinas/nosurf"
 	"html/template"
 	"io/fs"
@@ -10,15 +11,25 @@ import (
 	"path/filepath"
 )
 
-var functions = template.FuncMap{}
+func priceComma(price float64) string {
+	return humanize.Comma(int64(price))
+}
+
+var functions = template.FuncMap{
+	"priceComma": priceComma,
+}
 
 type templateData struct {
 	Form            any
-	User            *models.User
 	Limits          []*models.Limit
 	Flash           string
 	IsAuthenticated bool
 	CSRFToken       string
+
+	LoggedInUser *models.User
+	User         *models.User
+	Products     []*models.Product
+	Product      *models.Product
 }
 
 func (app *application) newTemplateData(r *http.Request) *templateData {
