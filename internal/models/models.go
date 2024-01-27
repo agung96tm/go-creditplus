@@ -5,9 +5,11 @@ import (
 )
 
 type Models struct {
-	User    UserModel
-	Limit   LimitModel
-	Product ProductModel
+	User       UserModel
+	Limit      LimitModel
+	Product    ProductModel
+	Config     ConfigModel
+	ConfigRate ConfigRateModel
 }
 
 func New(db *sql.DB) *Models {
@@ -15,5 +17,7 @@ func New(db *sql.DB) *Models {
 		UserModel{DB: db},
 		LimitModel{DB: db},
 		ProductModel{DB: db},
+		ConfigModel{DB: db},
+		ConfigRateModel{DB: db},
 	}
 }
