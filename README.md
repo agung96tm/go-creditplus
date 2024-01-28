@@ -53,10 +53,10 @@ $ make run/web
 
 
 ## Architectures
-#### Application
+### Application
 ![application-architecture](docs/application-architecture.png)
 
-#### Database
+### Database
 ![database-architecture](docs/database-architecture.png)
 
 ## Contributors
