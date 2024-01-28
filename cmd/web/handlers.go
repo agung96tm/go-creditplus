@@ -231,7 +231,7 @@ func (app *application) catalogBuyPostHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	trx, err := app.models.Transaction.Trx(
+	trxID, err := app.models.Transaction.Trx(
 		form.Phone,
 		user,
 		limit,
@@ -249,14 +249,19 @@ func (app *application) catalogBuyPostHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	_, err = app.models.Limit.ReduceLimit(limit, product.Price)
+	transaction, err := app.models.Transaction.Get(trxID)
 	if err != nil {
-		app.serverError(w, err)
+		switch {
+		case errors.Is(err, models.ErrNoDataFound):
+			app.notFound(w)
+		default:
+			app.serverError(w, err)
+		}
 		return
 	}
 
 	data := app.newTemplateData(r)
-	data.Transaction = trx
+	data.Transaction = transaction
 	data.Product = product
 	data.Limit = limit
 

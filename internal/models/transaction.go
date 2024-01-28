@@ -22,14 +22,21 @@ type TransactionModel struct {
 	DB *sql.DB
 }
 
-func (m TransactionModel) Trx(contactNumber string, user *User, limit *Limit, product *Product) (*Transaction, error) {
+func (m TransactionModel) Trx(contactNumber string, user *User, limit *Limit, product *Product) (int, error) {
 	if limit.UserID != user.ID {
-		return nil, ErrNoMatched
+		return 0, ErrNoMatched
 	}
 	if !limit.IsEligible(product.Price) {
-		return nil, ErrLimitInsufficient
+		return 0, ErrLimitInsufficient
 	}
 
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	// Transaction: New
 	query := `
 		INSERT INTO transactions
 		    (contact_number, amount_admin_fee, amount_otr, amount_installment, amount_interest, product_id, asset_name, user_id)
@@ -49,16 +56,29 @@ func (m TransactionModel) Trx(contactNumber string, user *User, limit *Limit, pr
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	result, err := m.DB.ExecContext(ctx, query, args...)
+	result, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
-		return nil, err
-	}
-	lastID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return m.Get(int(lastID))
+	// Limit: reduce
+	query = `UPDATE limits SET consumer_limit = consumer_limit - ? WHERE id = ?`
+	args = []any{product.Price, limit.ID}
+	_, err = tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	lastID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(lastID), nil
 }
 
 func (m TransactionModel) Get(id int) (*Transaction, error) {
