@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -75,6 +76,9 @@ func main() {
 }
 
 func initDB(dsn string) (*sql.DB, error) {
+	if strings.HasPrefix(dsn, "mysql://") {
+		dsn = strings.TrimPrefix(dsn, "mysql://")
+	}
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err

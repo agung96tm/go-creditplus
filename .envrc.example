@@ -1,3 +1,3 @@
 export SECRET_KEY=foobar
-export ADDR=:3000
-export DB_DSN=credit_user:credit_password@/credit_db
+export ADDR=:3300
+export DB_DSN=mysql://credit_user:credit_password@/credit_db
