@@ -20,6 +20,14 @@ type User struct {
 	SelfiePhoto string  `json:"selfie_photo"`
 }
 
+type UserModelInterface interface {
+	GetById(id int) (*User, error)
+	GetAll() ([]*User, error)
+	Exists(id int) (bool, error)
+	Authenticate(nik, password string) (int, error)
+	UpdatePassword(id int, password string) error
+}
+
 type UserModel struct {
 	DB *sql.DB
 }

@@ -12,6 +12,10 @@ type ConfigRate struct {
 	Percentage float64 `json:"percentage"`
 }
 
+type ConfigRateInterface interface {
+	GetRateByMonth(month int) (*ConfigRate, error)
+}
+
 type ConfigRateModel struct {
 	DB *sql.DB
 }
