@@ -1,27 +1,33 @@
-{{define "title"}}Login{{end}}
+{{define "title"}}Credit Plus - Login{{end}}
 
 {{define "main"}}
-    <form action='/login' method='POST' novalidate>
+<div class="max-w-md mx-auto mt-8">
+    <form action='/login' method='POST' novalidate class="bg-white rounded-lg overflow-hidden shadow-md p-6">
         <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+
         {{range .Form.NonFieldErrors}}
-            <div class='error'>{{.}}</div>
+            <div class='error mb-2'>{{.}}</div>
         {{end}}
-        <div>
-            <label>NIK:</label>
+
+        <div class="mb-4">
+            <label class="block text-gray-700">NIK:</label>
             {{with .Form.FieldErrors.Email}}
-                <label class='error'>{{.}}</label>
+                <label class='error text-red-500'>{{.}}</label>
             {{end}}
-            <input type='text' name='nik' value='{{.Form.NIK}}'>
+            <input type='text' name='nik' value='{{.Form.NIK}}' class="w-full border p-2">
         </div>
-        <div>
-            <label>Password:</label>
+
+        <div class="mb-4">
+            <label class="block text-gray-700">Password:</label>
             {{with .Form.FieldErrors.Password}}
-                <label class='error'>{{.}}</label>
+                <label class='error text-red-500'>{{.}}</label>
             {{end}}
-            <input type='password' name='password'>
+            <input type='password' name='password' class="w-full border p-2">
         </div>
+
         <div>
-            <input type='submit' value='Login'>
+            <input type='submit' value='Login' class="bg-blue-500 cursor-pointer text-white px-4 py-2 hover:bg-blue-600 focus:border-blue-300">
         </div>
     </form>
+</div>
 {{end}}

@@ -1,25 +1,22 @@
-{{define "title"}}Credit - Products{{end}}
+{{define "title"}}Credit Plus - Catalogs{{end}}
 
 {{define "main"}}
-    <div>
-        <h2>Products</h2>
-
-        {{range .Products}}
-            <div>
-                <div>
-                    <h3>{{ .Name }}</h3>
-                    <div>{{ .PartnerName }}</div>
-                </div>
-
-                <div>
-                    <p>{{ .Description }}</p>
-                    <p>Price: <strong>{{ priceComma .Price }}</strong></p>
-                </div>
-
-                <div>
-                    <a href='/catalogs/{{ .ID }}'>Lihat detail</a>
-                </div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {{range .Products}}
+        <div class="bg-white rounded-lg overflow-hidden shadow-md p-6">
+            <div class="mb-2">
+                <h2 class="text-xl font-semibold mb-2">{{ .Name }}</h2>
+                <div class="text-gray-600">{{ .PartnerName }}</div>
             </div>
-        {{end}}
-    </div>
+
+            <div class="mb-4">
+                <p class="text-blue-500">Price: <strong>{{ priceComma .Price }}</strong></p>
+            </div>
+
+            <div>
+                <a href='/catalogs/{{ .ID }}' class="bg-blue-500 text-white px-4 py-2 hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300">Lihat detail</a>
+            </div>
+        </div>
+    {{end}}
+</div>
 {{end}}

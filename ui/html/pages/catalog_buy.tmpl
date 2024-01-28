@@ -1,52 +1,50 @@
-{{define "title"}}Credit - Product{{end}}
+{{define "title"}}Credit Plus - Product{{end}}
 
 {{define "main"}}
-    <div>
-        {{ with .Product }}
-            <h2>{{ .Name }}</h2>
+<div class="max-w-xl mx-auto mt-8">
+    {{ with .Product }}
+        <div class="bg-white rounded-lg overflow-hidden shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">{{ .Name }}</h2>
 
-            <div>
-                <div>{{ .PartnerName }}</div>
-            </div>
+            <div class="text-gray-600 mb-2">{{ .PartnerName }}</div>
 
             <div>
                 <p>{{ .Description }}</p>
-                <p>Price: <strong>{{ priceComma .Price }}</strong></p>
+                <p class="text-blue-500">Price: <strong>{{ priceComma .Price }}</strong></p>
             </div>
-        {{ end }}
-    </div>
+        </div>
+    {{ end }}
 
-    <div>
-        <h2>Pesan</h2>
+    <div class="bg-white rounded-lg overflow-hidden shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-4">Pesan</h2>
         {{ if gt (len .Limits) 0 }}
-            <form method='post' action='/catalogs/{{ .Product.ID }}/buy' method='POST' novalidate>
-                <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
-                <div>
-                    <input type='text' name='name' value='{{ .Form.Name }}' placeholder='Nama' />
+            <form method="post" action="/catalogs/{{ .Product.ID }}/buy" method="POST" novalidate>
+                <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                <div class="mb-4">
+                    <input type="text" name="name" value="{{ .Form.Name }}" placeholder="Nama" class="border p-2 w-full">
                 </div>
-                <div>
-                    <input type='text' name='phone' value='{{ .Form.Phone }}' placeholder='Nomor Telepon' />
+                <div class="mb-4">
+                    <input type="text" name="phone" value="{{ .Form.Phone }}" placeholder="Nomor Telepon" class="border p-2 w-full">
                 </div>
 
-                <br />
-
-                {{ range .Limits }}
-                    <div>
-                        <input type="radio" id='{{ .ID }}' name="limit_id" value='{{ .ID }}'>
-                        <label for="{{ .ID }}">{{ .Month }} Bulan - {{ priceComma .PayPerMonth }} (Admin: {{ .AdminFee }}% + Include Rate Per Month: {{.PercentageRate}}%)</label><br>
-                    </div>
-                {{ end }}
-
-                <br />
+                <div class="mb-4">
+                    {{ range .Limits }}
+                        <div>
+                            <input type="radio" id="{{ .ID }}" name="limit_id" value="{{ .ID }}" class="mr-2">
+                            <label for="{{ .ID }}">{{ .Month }} Bulan - Rp. {{ priceComma .PayPerMonth }} (admin: {{ .AdminFee }}% + per-bulan: {{.PercentageRate}}%)</label>
+                        </div>
+                    {{ end }}
+                </div>
 
                 <div>
-                    <button type="submit">Pesan Sekarang</button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300">
+                        Pesan Sekarang
+                    </button>
                 </div>
             </form>
         {{ else }}
-            <p><i>Kredit anda sudah mencapai limit</i></p>
+            <p class="italic">Kredit anda sudah mencapai limit</p>
         {{ end }}
     </div>
-
-    <br /><br />
+</div>
 {{end}}

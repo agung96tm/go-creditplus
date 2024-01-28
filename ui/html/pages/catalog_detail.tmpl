@@ -1,24 +1,23 @@
-{{define "title"}}Credit - Product{{end}}
+{{define "title"}}Credit Plus - Product{{end}}
 
 {{define "main"}}
-    <div>
-        {{ with .Product }}
-            <h2>{{ .Name }}</h2>
+<div class="bg-white rounded-lg overflow-hidden shadow-md p-6 max-w-xl mx-auto mt-8">
+    {{ with .Product }}
+        <div class="mb-2">
+            <h2 class="text-2xl font-semibold mb-4">{{ .Name }}</h2>
+            <div class="text-gray-600">{{ .PartnerName }}</div>
+        </div>
 
-            <div>
-                <div>{{ .PartnerName }}</div>
-            </div>
+        <div class="mb-4">
+            <p>{{ .Description }}</p>
+            <p class="text-blue-500">Price: <strong>{{ priceComma .Price }}</strong></p>
+        </div>
 
-            <div>
-                <p>{{ .Description }}</p>
-                <p>Price: <strong>{{ priceComma .Price }}</strong></p>
-            </div>
-
-            <div>
-                <a href='/catalogs/{{ .ID }}/buy'>Beli Product</a>
-            </div>
-        {{ end }}
-    </div>
-
-    <br /><br />
+        <div>
+            <a href='/catalogs/{{ .ID }}/buy' class="bg-blue-500 text-white px-4 py-2 inline-block hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300">
+                Beli Product
+            </a>
+        </div>
+    {{ end }}
+</div>
 {{end}}
