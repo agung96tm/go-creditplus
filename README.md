@@ -1,5 +1,6 @@
 Go Creditplus
 =========================================
+Credit application created with the Golang programming language.
 
 ## How to Run
 
