@@ -264,6 +264,19 @@ func (app *application) catalogBuyPostHandler(w http.ResponseWriter, r *http.Req
 }
 
 func (app *application) dashboardHandler(w http.ResponseWriter, r *http.Request) {
+	userID := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+	user, err := app.models.User.GetById(userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrNoDataFound):
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		default:
+			app.serverError(w, err)
+		}
+		return
+	}
+
 	data := app.newTemplateData(r)
+	data.LoggedInUser = user
 	app.render(w, http.StatusOK, "dashboard.tmpl", data)
 }

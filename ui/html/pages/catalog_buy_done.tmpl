@@ -1,16 +1,19 @@
-{{define "title"}}Credit - Success{{end}}
+{{define "title"}}Credit Plus - Success{{end}}
 
 {{define "main"}}
-    <div>
-         <h2>Berhasil membeli Product: {{ .Product.Name }}</h2>
-         <div>
-             <p>Biaya: <strong>{{ priceComma .Limit.Total }} (termasuk admin {{.Limit.AdminFee}}%)</strong></p>
-             <p>Bayar Bulan: <strong>{{ priceComma .Limit.PayPerMonth }} x {{ .Limit.Month }} Bulan (termasuk biaya {{ .Limit.PercentageRate}}%)</strong></p>
-             <p>Total: <strong>{{ priceComma .Transaction.AmountInstallment }}</strong></p>
-         </div>
+<div class="max-w-xl mx-auto mt-8">
+    <div class="bg-white rounded-lg overflow-hidden shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-4">Berhasil membeli Product: {{ .Product.Name }}</h2>
 
-         <div>
-            <a href='/dashboard'>Kembali ke dashboard</a>
-         </div>
+        <div class="mb-4">
+            <p>Biaya: <strong>{{ priceComma .Limit.Total }} (termasuk admin {{.Limit.AdminFee}}%)</strong></p>
+            <p>Bayar Per-bulan: <strong>{{ priceComma .Limit.PayPerMonth }} x {{ .Limit.Month }} Bulan (termasuk biaya {{ .Limit.PercentageRate}}%)</strong></p>
+            <p>Total: <strong>{{ priceComma .Transaction.AmountInstallment }}</strong></p>
+        </div>
+
+        <div>
+            <a href='/' class="text-blue-500 hover:underline">Kembali ke catalog</a>
+        </div>
     </div>
+</div>
 {{ end }}
