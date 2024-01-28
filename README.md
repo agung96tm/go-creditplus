@@ -40,6 +40,11 @@ $ make run/web
   | 1411502550123 | p@ssw0rd24 |
   | 1411502550827 | p@ssw0rd24 |
 
+###  Run Test (Optional)
+```
+$ make audit
+```
+
 ## Routers
 | Path              | Description                | Login Required |
 |-------------------|----------------------------|----------------|
