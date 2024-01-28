@@ -18,6 +18,11 @@ type Transaction struct {
 	ProductName string `json:"asset_name"`
 }
 
+type TransactionModelInterface interface {
+	Trx(contactNumber string, user *User, limit *Limit, product *Product) (int, error)
+	Get(id int) (*Transaction, error)
+}
+
 type TransactionModel struct {
 	DB *sql.DB
 }

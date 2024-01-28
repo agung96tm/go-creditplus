@@ -16,6 +16,11 @@ type Product struct {
 	PartnerName string  `json:"partner_name"`
 }
 
+type ProductModelInterface interface {
+	GetAll() ([]*Product, error)
+	Get(id int) (*Product, error)
+}
+
 type ProductModel struct {
 	DB *sql.DB
 }

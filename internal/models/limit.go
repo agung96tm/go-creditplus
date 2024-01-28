@@ -25,6 +25,13 @@ func (l Limit) IsEligible(price float64) bool {
 	return l.ConsumerLimit >= price
 }
 
+type LimitModelInterface interface {
+	GetLimitByConsumer(user *User) ([]*Limit, error)
+	GetLimitsByUserAndProduct(user *User, product *Product) ([]*Limit, error)
+	ReduceLimit(limit *Limit, amount float64) (bool, error)
+	GetWithProductCalc(id int, product *Product) (*Limit, error)
+}
+
 type LimitModel struct {
 	DB *sql.DB
 }

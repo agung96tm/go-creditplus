@@ -11,6 +11,10 @@ type Config struct {
 	AdminFee float64 `json:"admin_fee"`
 }
 
+type ConfigModelInterface interface {
+	Get() (*Config, error)
+}
+
 type ConfigModel struct {
 	DB *sql.DB
 }
