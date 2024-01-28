@@ -8,9 +8,31 @@ type ProductModel struct {
 }
 
 func (m ProductModel) GetAll() ([]*models.Product, error) {
-	return make([]*models.Product, 0), nil
+	return []*models.Product{
+		{
+			ID:          1,
+			Name:        "Product1",
+			Price:       200000.0,
+			Description: "Product 1",
+			PartnerID:   1,
+			PartnerName: "My Partner",
+		},
+	}, nil
 }
 
 func (m ProductModel) Get(id int) (*models.Product, error) {
-	return &models.Product{}, nil
+	if id != 1 {
+		return nil, models.ErrNoDataFound
+	}
+
+	product := models.Product{
+		ID:          1,
+		Name:        "Product1",
+		Price:       200000.0,
+		Description: "Product 1",
+		PartnerID:   1,
+		PartnerName: "My Partner",
+	}
+
+	return &product, nil
 }

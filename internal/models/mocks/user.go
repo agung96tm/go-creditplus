@@ -8,7 +8,20 @@ type UserModel struct {
 }
 
 func (m UserModel) GetById(id int) (*models.User, error) {
-	return &models.User{}, nil
+	if id != 1 {
+		return nil, models.ErrInvalidCredentials
+	}
+	return &models.User{
+		ID:          1,
+		NIK:         "123456789",
+		FullName:    "Example Fullname",
+		LegalName:   "Example LegalName",
+		PlaceBirth:  "Banten",
+		DateBirth:   "",
+		Salary:      28888.0,
+		IDCardPhoto: "https://example.com/1.jpg",
+		SelfiePhoto: "https://example.com/1.jpg",
+	}, nil
 }
 
 func (m UserModel) GetAll() ([]*models.User, error) {
@@ -16,13 +29,22 @@ func (m UserModel) GetAll() ([]*models.User, error) {
 }
 
 func (m UserModel) Exists(id int) (bool, error) {
-	return false, nil
+	if id != 1 {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (m UserModel) Authenticate(nik, password string) (int, error) {
-	return 0, nil
+	if nik == "123456789" && password == "pa$$word" {
+		return 1, nil
+	}
+	return 0, models.ErrInvalidCredentials
 }
 
 func (m UserModel) UpdatePassword(id int, password string) error {
-	return nil
+	if id != 1 {
+		return nil
+	}
+	return models.ErrNoDataFound
 }
